@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>BIRTHDAY — NIZAR</title>
+
+<!-- Tailwind CDN (utility helpers only — all bespoke pixel-art styling lives in style.css) -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Pixel-perfect retro fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ============================================================
+     GLOBAL FX LAYERS — CRT scanlines, vignette, night sky, noise
+     ============================================================ -->
+<canvas id="sky-canvas"></canvas>
+<div class="vignette"></div>
+<div class="scanlines"></div>
+<div class="crt-flicker"></div>
+
+<!-- ============================================================
+     SCREEN 0 — LOADING / TITLE
+     ============================================================ -->
+<section id="screen-loading" class="screen active">
+  <div class="pixel-frame loading-frame">
+    <div class="mini-portrait pixel-heart-small"></div>
+    <p class="eyebrow">◆ A ONE PLAYER EXPERIENCE ◆</p>
+    <h1 class="title-glow big-title">SECRET<br>BIRTHDAY<br>QUEST</h1>
+    <div class="loading-bar-wrap">
+      <div class="loading-bar-frame">
+        <div id="loading-bar-fill" class="loading-bar-fill"></div>
+      </div>
+      <p id="loading-pct" class="mono-label">LOADING… 0%</p>
+    </div>
+    <button id="btn-start" class="btn-press-start hidden">
+      <span class="cursor-block">▶</span> PRESS START
+    </button>
+    <p class="mono-label faint">© A GIFT ENGINE · FOR NIZAR ONLY</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SCREEN 1 — PASSWORD / PIN
+     ============================================================ -->
+<section id="screen-password" class="screen">
+  <div class="pixel-frame panel">
+    <div class="mini-portrait pixel-heart-small"></div>
+    <p class="eyebrow">◆ SAVE FILE LOCKED ◆</p>
+    <h2 class="title-glow mid-title">ACCESS REQUIRED</h2>
+    <p class="sub-text">Cuma player pilihan yang boleh lanjut.</p>
+
+    <div id="pin-dots" class="pin-dots">
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+    </div>
+
+    <!-- EDIT HERE: ganti 4-digit PIN buat Nizar -->
+    <input id="pin-input" type="tel" inputmode="numeric" maxlength="4" autocomplete="off" class="sr-only-input" />
+
+    <div class="pixel-keypad">
+      <button class="key" data-key="1">1</button>
+      <button class="key" data-key="2">2</button>
+      <button class="key" data-key="3">3</button>
+      <button class="key" data-key="4">4</button>
+      <button class="key" data-key="5">5</button>
+      <button class="key" data-key="6">6</button>
+      <button class="key" data-key="7">7</button>
+      <button class="key" data-key="8">8</button>
+      <button class="key" data-key="9">9</button>
+      <button class="key key-ghost" data-key="hint">?</button>
+      <button class="key" data-key="0">0</button>
+      <button class="key key-del" data-key="del">⌫</button>
+    </div>
+
+    <p id="pin-msg" class="mono-label error-msg">&nbsp;</p>
+    <p id="pin-hint" class="mono-label faint">HINT: tahun lahirnya</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SCREEN 2 — HERO / NEW MAP
+     ============================================================ -->
+<section id="screen-hero" class="screen">
+  <div class="hero-parallax">
+    <div class="hero-castle"></div>
+    <div class="hero-petals" id="hero-petals"></div>
+  </div>
+  <div class="hero-content">
+    <p class="eyebrow glow-pulse">◆ NEW MAP DISCOVERED ◆</p>
+    <h1 class="title-glow huge-title">HAPPY<br>BIRTHDAY</h1>
+    <h2 id="recipient-name" class="recipient-name">NIZAR</h2>
+    <p class="sub-text">Player 01 sudah masuk ke dunia ini.</p>
+    <div id="hero-player" class="hero-player"></div>
+    <button id="btn-journey" class="btn-press-start">
+      <span class="cursor-block">▶</span> START JOURNEY
+    </button>
+  </div>
+</section>
+
+<!-- ============================================================
+     GAME HUD — persistent top bar once journey has started
+     ============================================================ -->
+<header id="hud" class="hud hidden">
+  <div class="hud-left">
+    <p class="hud-title">BIRTHDAY QUEST</p>
+    <p class="hud-level">LEVEL <span id="hud-level-num">01</span> / 06</p>
+  </div>
+  <div class="hud-mid">
+    <p class="mono-label hp-label">HP</p>
+    <div id="hp-bar" class="hp-bar"></div>
+  </div>
+  <div class="hud-right">
+    <p class="hud-title">PLAYER 01</p>
+    <div class="hud-heart-icon"></div>
+  </div>
+</header>
+
+<!-- ============================================================
+     GAME — Level container (levels 1–6)
+     ============================================================ -->
+<main id="game" class="screen">
+
+  <!-- LEVEL 01 — Pesan 1 -->
+  <section class="level active" data-level="1">
+    <p class="level-tag">LEVEL 01 — HAI NIZAR</p>
+    <div class="dialogue-box">
+      <div class="portrait-frame"><div class="pixel-heart-small"></div></div>
+      <div class="dialogue-text-wrap">
+        <p class="dialogue-name">UNTUK: NIZAR</p>
+        <p class="dialogue-text" data-typing="hii, nizar akuuu, akuu sayangg banget sma kamuuuu, bener² sayangggg gada yang bisa ngalahin sayang nya aku ke kamuu tauuuu"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEVEL 02 — Pesan 2 -->
+  <section class="level" data-level="2">
+    <p class="level-tag">LEVEL 02 — TERIMA KASIH</p>
+    <div class="dialogue-box">
+      <div class="portrait-frame"><div class="pixel-heart-small"></div></div>
+      <div class="dialogue-text-wrap">
+        <p class="dialogue-name">DARI: ACA</p>
+        <p class="dialogue-text" data-typing="makasii yaa udh hadir di hidup akuu, buat hidup aku lebih bewarnaa, maaf kalau akuu ngeselin ke kamuu, tapii di setiap kesel aku, aku gamauu kita breakkk"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEVEL 03 — Why You're Special (cards) -->
+  <section class="level" data-level="3">
+    <p class="level-tag">LEVEL 03 — KENAPA KAMU SPESIAL</p>
+    <div class="mini-portrait pixel-heart-small center-portrait"></div>
+    <p class="sub-text center-text">Kartu koleksi. Klik NEXT CARD buat liat lagi.</p>
+    <div class="card-stage">
+      <div id="trait-card" class="trait-card">
+        <p class="trait-card-index" id="trait-index">01 / 06</p>
+        <div class="trait-icon" id="trait-icon"></div>
+        <p class="trait-title" id="trait-title">KEBAIKANMU</p>
+        <p class="trait-desc" id="trait-desc">Sifat yang gapernah ilang walau lagi susah sekalipun.</p>
+      </div>
+    </div>
+    <button id="btn-next-card" class="btn-secondary">NEXT CARD ▸</button>
+  </section>
+
+  <!-- LEVEL 04 — Secret Letter (pesan 3) -->
+  <section class="level" data-level="4">
+    <p class="level-tag">LEVEL 04 — SURAT RAHASIA</p>
+    <div class="chest-stage">
+      <div class="mini-portrait pixel-heart-small"></div>
+      <button id="chest-btn" class="chest-btn" aria-label="Open chest">
+        <div id="chest-sprite" class="chest-sprite chest-closed"></div>
+        <p class="mono-label">TAP TO OPEN</p>
+      </button>
+      <div id="letter-paper" class="letter-paper hidden">
+        <p class="letter-heading">SURAT UNTUK NIZAR</p>
+        <p class="letter-text" data-typing="i love you today tomorrow and forever. terimakasih telah hadir di hidupku, dari banyaknya orang orang yang datang di kehidupanku terimakasih karna kamu sudah menjadi yang terbaik diantara mereka, terimakasih untuk hal hal baik yang sudah kamu usahakan, terimakasih atas semua perlakuan baikmu terhadap perempuan serumit diriku, trimakasih atas semua kesabaran yang slma ini kamu terapkan beriringan denganmu membuat aku paham bahwa hidup hanya tentang rasa syukur dan cukup, kalau kita terus cari yang sempurna kita akan kehilangan seseorang yg sllu ada, dan ga ada hubungan yg jalan nya lurus lurus aja tanpa luka, tanpa salah paham, tanpa diam diam tahan nangis, kadang kita saling melukai tanpa sadar, kdang juga capek dan ingin menyerah, tapi percayalah semua hubungan pasti ada badainya, intinya cuman satu, lewati bareng-bareng badainya dan jangan ganti orang nya"></p>
+        <p class="letter-sign">— Aca</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEVEL 05 — Memory -->
+  <section class="level" data-level="5">
+    <p class="level-tag">LEVEL 05 — MEMORY</p>
+    <div class="mini-portrait pixel-heart-small"></div>
+    <p class="sub-text center-text">Ini kenangan kita.</p>
+    <div class="memory-stage">
+      <div class="memory-photo-frame">
+        <!-- EDIT HERE: taruh foto1.jpg di folder yang sama dengan file ini -->
+        <img src="foto1.jpg" alt="Memory kita" class="memory-photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+        <div class="photo-fallback">
+          <p class="mono-label">FOTO1.JPG</p>
+          <p class="mono-label faint">taruh file foto1.jpg di sini</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEVEL 06 — Final Boss -->
+  <section class="level" data-level="6">
+    <p class="level-tag">LEVEL 06 — FINAL BOSS</p>
+    <div class="mini-portrait pixel-heart-small"></div>
+    <p class="sub-text center-text">Sebuah hati raksasa menghalangi jalan. Kalahkan dengan cinta.</p>
+    <div class="boss-stage">
+      <button id="boss-heart" class="boss-heart" aria-label="Attack the heart"></button>
+      <div class="boss-hp-frame">
+        <div id="boss-hp-fill" class="boss-hp-fill"></div>
+      </div>
+      <p class="mono-label" id="boss-counter">TAP THE HEART · 0 / 12</p>
+    </div>
+  </section>
+
+  <!-- Level navigation -->
+  <div class="level-nav">
+    <button id="btn-prev" class="btn-secondary btn-nav" disabled>◂ BACK</button>
+    <div class="level-dots" id="level-dots"></div>
+    <button id="btn-next" class="btn-secondary btn-nav">NEXT ▸</button>
+  </div>
+</main>
+
+<!-- ============================================================
+     FINAL SCENE — Mission Complete
+     ============================================================ -->
+<section id="screen-final" class="screen">
+  <canvas id="fx-canvas"></canvas>
+  <div class="final-content">
+    <div class="final-heart-glow"></div>
+    <p class="eyebrow glow-pulse">◆ MISSION COMPLETE ◆</p>
+    <h1 class="title-glow huge-title">HAPPY<br>BIRTHDAY</h1>
+    <div class="final-photo-frame">
+      <!-- EDIT HERE: taruh foto2.jpg (foto yang udah ada pesannya) di folder yang sama -->
+      <img id="final-photo" src="foto2.jpg" alt="Momen kita" class="final-photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+      <div class="photo-fallback">
+        <p class="mono-label">FOTO2.JPG</p>
+        <p class="mono-label faint">taruh file foto2.jpg di sini</p>
+      </div>
+    </div>
+    <button id="btn-replay" class="btn-press-start">
+      <span class="cursor-block">▶</span> PLAY AGAIN
+    </button>
+    <p class="mono-label faint">psst — hati di atas masih nyimpen satu rahasia lagi.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECRET UNLOCKED — Easter egg overlay
+     ============================================================ -->
+<div id="screen-secret" class="secret-overlay hidden">
+  <div class="pixel-frame panel secret-panel">
+    <p class="eyebrow glow-pulse">◆ SECRET UNLOCKED ◆</p>
+    <h2 class="title-glow mid-title">+1 HIDDEN LEVEL</h2>
+    <p class="letter-text" data-typing="Ini gak ada di walkthrough manapun. Gak akan ada yang nemu layar ini selain kamu — soalnya ini cuma muncul karna kamu terus tap, sama kayak kamu yang selalu ada buat aku tanpa perlu diminta. Aku sayang kamu lebih dari pixel manapun yang bisa dirender. Happy birthday, Nizar."></p>
+    <button id="btn-close-secret" class="btn-secondary">CLOSE</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     MUSIC PLAYER — floating retro console widget
+     ============================================================ -->
+<div id="music-player" class="music-player hidden">
+  <div class="music-screen">
+    <p class="mono-label music-title" id="music-track-name">TRACK 01 — UNTIL I FOUND YOU</p>
+    <div class="music-eq">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="music-controls">
+    <button id="music-toggle" class="key key-music" aria-label="Play or pause music">▶</button>
+    <input id="music-volume" type="range" min="0" max="100" value="40" class="pixel-range" />
+  </div>
+</div>
+
+<!-- EDIT HERE: point src at your own music file to enable the soundtrack -->
+<audio id="bg-audio" loop preload="none" src="music.mp3"></audio>
+
+<script src="script.js"></script>
+</body>
+</html>
