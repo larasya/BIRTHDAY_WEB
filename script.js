@@ -327,7 +327,7 @@ btnStart.addEventListener("click", () => showScreen("screen-password"));
    5. PASSWORD / PIN SCREEN
    ------------------------------------------------------------------------- */
 // EDIT HERE: the correct PIN — set this to Nizar's birth year (YYYY), matches the hint on screen
-const CORRECT_PIN = "0101";
+const CORRECT_PIN = "2007";
 
 const pinDots = $$(".pin-dot");
 const pinMsg = $("#pin-msg");
